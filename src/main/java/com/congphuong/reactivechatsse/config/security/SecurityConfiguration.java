@@ -2,6 +2,7 @@ package com.congphuong.reactivechatsse.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
@@ -9,6 +10,8 @@ import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebFluxSecurity
@@ -18,13 +21,26 @@ public class SecurityConfiguration {
             "/resources/**",
             "/webjars/**",
             "/auth/**",
-            "/favicon.ico"
+            "/favicon.ico",
+            "/stream/chat/*",
+            "/files/*",
+            "/register"
     };
 
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(final ServerHttpSecurity http,
                                                             final JwtAuthenticationWebFilter authenticationWebFilter,
                                                             final UnauthorizedAuthenticationEntryPoint entryPoint) {
+
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        final CorsConfiguration config = new CorsConfiguration();
+
+        config.addAllowedOrigin("*");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("GET");
+        config.addAllowedMethod("PUT");
+        config.addAllowedMethod("POST");
+        source.registerCorsConfiguration("/**", config);
         // We must override AuthenticationEntryPoint because if AuthenticationWebFilter didn't kicked in
         // (i.e. there are no required headers) then default behavior is to display HttpBasicAuth,
         // so we just return unauthorized to override it.
@@ -34,9 +50,12 @@ public class SecurityConfiguration {
                 .exceptionHandling()
                 .authenticationEntryPoint(entryPoint)
                 .and()
+
                 .addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .authorizeExchange()
+                .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .pathMatchers(AUTH_WHITELIST).permitAll()
+
                 .anyExchange().authenticated()
                 .and()
                 .httpBasic().disable()

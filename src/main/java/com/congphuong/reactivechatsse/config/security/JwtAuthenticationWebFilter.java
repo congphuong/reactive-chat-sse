@@ -1,6 +1,8 @@
 package com.congphuong.reactivechatsse.config.security;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.authentication.ServerAuthenticationEntryPointFailureHandler;
@@ -8,6 +10,7 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -28,6 +31,35 @@ public class JwtAuthenticationWebFilter extends AuthenticationWebFilter {
         setRequiresAuthenticationMatcher(new JWTHeadersExchangeMatcher());
     }
 
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+
+//        return super.filter(exchange, chain);
+        return Mono.just(exchange).flatMap(webExchange -> {
+            ServerHttpRequest req = webExchange.getRequest();
+            ServerHttpResponse res = webExchange.getResponse();
+            if (!res.getHeaders().containsKey("Access-Control-Allow-Origin")) {
+                res.getHeaders().add("Access-Control-Allow-Origin", "*");
+            }
+            if (!res.getHeaders().containsKey("Access-Control-Allow-Headers")) {
+                res.getHeaders().add("Access-Control-Allow-Headers", "Authorization, Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
+            }
+            res.getHeaders().add("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, PATCH, HEAD");
+//            res.getHeaders().add("Access-Control-Allow-Headers", "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
+            res.getHeaders().add("Access-Control-Expose-Headers", "Access-Control-Allow-Origin, Access-Control-Allow-Credentials");
+            res.getHeaders().add("Access-Control-Allow-Credentials", "true");
+            res.getHeaders().add("Access-Control-Max-Age", "10");
+
+            if ("OPTIONS".equalsIgnoreCase(req.getMethodValue())) {
+                res.setStatusCode(HttpStatus.OK);
+                return super.filter(exchange, chain);
+            } else {
+                return super.filter(exchange, chain);
+            }
+
+        });
+    }
+
     private static class JWTHeadersExchangeMatcher implements ServerWebExchangeMatcher {
         @Override
         public Mono<MatchResult> matches(final ServerWebExchange exchange) {
@@ -44,4 +76,5 @@ public class JwtAuthenticationWebFilter extends AuthenticationWebFilter {
                     );
         }
     }
+
 }

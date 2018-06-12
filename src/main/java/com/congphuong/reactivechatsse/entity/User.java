@@ -41,9 +41,11 @@ public class User implements UserDetails {
     private final String lastname;
     private final String password;
     private final String email;
+    private String url;
     private List<String> roles = new ArrayList<String>();
     private final boolean enabled;
     private final Date lastPasswordResetDate;
+
 
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
     public User(
@@ -52,6 +54,7 @@ public class User implements UserDetails {
             String firstname,
             String lastname,
             String email,
+            String url,
             String password, List<String> roles,
             boolean enabled,
             Date lastPasswordResetDate
@@ -61,6 +64,7 @@ public class User implements UserDetails {
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
+        this.url = url;
         this.password = password;
         this.roles = roles;
         this.enabled = enabled;
@@ -106,6 +110,14 @@ public class User implements UserDetails {
 
     public String getEmail() {
         return email;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     @JsonIgnore

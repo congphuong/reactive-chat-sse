@@ -43,17 +43,16 @@ public class AuthRestController {
 	public Mono<ResponseEntity<JwtAuthenticationResponse>> token(@RequestBody JwtAuthenticationRequest authenticationRequest) throws AuthenticationException {
 		String username =  authenticationRequest.getUsername();
 		String password =  authenticationRequest.getPassword();
-		List<String> role = new ArrayList<>();
-		role.add("ROLE_ADMIN");
-		Date d = new Date();
-		User u = new User(null, "abc", "a","a","abc","123",role,true, d);
-		repo.save(u);
 
 		return repo.findByUsername(authenticationRequest.getUsername())
-			.map(user -> ok().contentType(APPLICATION_JSON_UTF8).body(
-					new JwtAuthenticationResponse(jwtTokenUtil.generateToken(user), user.getUsername()))
-			)
-			.defaultIfEmpty(notFound().build());
+			.flatMap(user -> {
+					if (user.getPassword().equals(password) ){
+						return Mono.justOrEmpty(ok().contentType(APPLICATION_JSON_UTF8).body(
+								new JwtAuthenticationResponse(jwtTokenUtil.generateToken(user), user.getUsername())));
+					}
+						return Mono.justOrEmpty(notFound().build());
+			}
+			);
 	}
 
 	@RequestMapping(method = POST, value = "/register", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -62,8 +61,7 @@ public class AuthRestController {
 		List<String> role = new ArrayList<>();
 		role.add("ROLE_USER");
 		Date d = new Date();
-		User u = new User(null, user.getUsername(), "a","a","abc",user.getPassword(),role,true, d);
-
+		User u = new User(null, user.getUsername(), "","",user.getEmail(), "",user.getPassword(),role,true, d);
 
 		return repo.save(u);
 	}

@@ -1,5 +1,8 @@
 package com.congphuong.reactivechatsse.entity;
 
+import com.congphuong.reactivechatsse.request.ChatMessageModel;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -8,14 +11,15 @@ import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 @Document(collection = "chatMessage")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ChatMessage {
-    enum ChatType  {TEXT,TEXT_AND_PICTURE};
+    public static enum ChatType  {TEXT,TEXT_AND_PICTURE};
 
     @Id
     private String id;
 
-    @NotNull
-    private String username;
+    @DBRef
+    private User user;
 
     @NotNull
     private String roomId;
@@ -32,12 +36,20 @@ public class ChatMessage {
 
     public ChatMessage() {}
 
-    public ChatMessage(@NotNull String username, @NotNull String roomId, @NotNull ChatType chatType, String text, String url) {
-        this.username = username;
+    @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+    public ChatMessage(@NotNull User user, @NotNull String roomId, @NotNull ChatType chatType, String text, String url) {
+        this.user = user;
         this.roomId = roomId;
         this.chatType = chatType;
         this.text = text;
         this.url = url;
+    }
+
+    public ChatMessage(ChatMessageModel chatMessageModel){
+        this.roomId = chatMessageModel.getRoomId();
+        this.chatType = chatMessageModel.getChatType();
+        this.text = chatMessageModel.getText();
+        this.url = chatMessageModel.getUrl();
     }
 
     public String getId() {
@@ -48,12 +60,12 @@ public class ChatMessage {
         this.id = id;
     }
 
-    public String getUsername() {
-        return username;
+    public User getUser() {
+        return user;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getRoomId() {

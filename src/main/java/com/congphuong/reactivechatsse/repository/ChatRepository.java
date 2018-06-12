@@ -15,6 +15,6 @@ public interface ChatRepository extends ReactiveMongoRepository<ChatMessage, Str
     @Tailable
     public Flux<ChatMessage> findByRoomIdAndCreateAtGreaterThanEqual(String roomId, Date creatAt);
 
-    Flux<ChatMessage> findByRoomId(String roomId, Pageable pageable);
+    Flux<ChatMessage> findByRoomIdOrderByCreateAtDesc(String roomId, Pageable pageable);
 
 }

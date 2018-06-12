@@ -9,7 +9,6 @@ import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
 
-@CrossOrigin
 @RestController
 public class RoomController {
 
@@ -20,6 +19,11 @@ public class RoomController {
     @GetMapping("/room")
     public Flux<Room> getRoom() {
         return roomRepository.findAll();
+    }
+
+    @GetMapping("/room/{roomid}")
+    public Mono<Room> getRoomById(@PathVariable(value = "roomid") String roomId) {
+        return roomRepository.findById(roomId);
     }
 
     @PostMapping("/room")
