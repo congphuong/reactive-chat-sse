@@ -35,16 +35,17 @@ public class FileController {
         File f = new File();
         String fileName = fileStorageService.storeFile(file);
         String host = request.getURI().getHost();
-        String fileDownloadUri = UriComponentsBuilder.fromHttpRequest(request).replacePath("/files/")
-                //.path("/downloadFile/")
-                .path(fileName)
-                .toUriString();
+//        String fileDownloadUri = UriComponentsBuilder.fromHttpRequest(request).replacePath("/files/")
+//                //.path("/downloadFile/")
+//                .path(fileName)
+//                .toUriString();
+        String fileDownloadUri = "/files/" + fileName;
 
 //        String fileDownloadUri = UriComponentsBuilder.fromUriString(host)
 //                .path("/downloadFile/")
 //                .path(fileName)
 //                .toUriString();
-        f.setUrl(fileDownloadUri);
+            f.setUrl(fileDownloadUri);
 
         return fileRepository.save(f);
     }
